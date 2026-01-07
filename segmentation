@@ -1,0 +1,84 @@
+# Fiber Segmentation Challenge: Unsupervised Instance Segmentation of Microscope Fibers
+
+[![Fiber Segmentation Animation](animation.gif)](animation.gif)  
+*Click the animation above to view the full segmentation pipeline in action.*
+
+## Overview
+
+This repository tackles a challenging **unsupervised instance segmentation** problem on grayscale microscope images of polyester and cotton fibers. The primary goal is to automatically segment individual fibers, separate overlapping or crossing ones, and measure their sizes (lengths and widths) to analyze size distribution — **all without any manual annotations or labeled training data**.
+
+State-of-the-art deep learning models, including the **Segment Anything Model (SAM)** and its variants (e.g., SAM-HQ, MedSAM), were tested but failed to produce reliable results on this dataset. The domain gap from natural-color images to noisy grayscale microscopy, combined with heavy overlaps and lack of prompts/labels, makes zero-shot and foundation models ineffective here.
+
+Instead, this project implements a robust **classical image processing pipeline** that successfully achieves high-quality segmentation and instance separation. It serves as a practical benchmark for unsupervised segmentation in microscopy and material science applications.
+
+## Why This Problem is Challenging
+
+- **Zero Annotations**: No ground-truth masks or bounding boxes are available, ruling out standard supervised training.
+- **Complex Topology**: Fibers are thin, highly curved, branched, and frequently overlap or cross, creating ambiguous junctions.
+- **Grayscale Microscopy**: Images have low contrast, stitching artifacts, noise, and no color/staining cues.
+- **Failure of Modern Models**:
+  - SAM requires manual or automated prompts; automatic point/box generation leads to severe over- or under-segmentation.
+  - Overlapping fibers are almost always merged into single instances.
+  - Fine, thin structures are missed or fragmented due to the model's bias toward natural images.
+- **Real-World Variability**: 4 different fiber types × 2 concentrations across 24 high-resolution images, exhibiting extreme size variation (short fragments to long entangled fibers).
+- **Application Relevance**: Critical for textile quality control, microplastic analysis, and material characterization, yet difficult to automate reliably.
+
+This makes the dataset an excellent testbed for unsupervised/weakly-supervised segmentation, graph-based separation, or pseudo-labeling techniques.
+
+## Dataset
+
+The dataset contains:
+
+- **24 Reconstructed Images**: High-resolution grayscale stitched composites (e.g., `imagen_reconstruida.png`).
+- **Raw Tiles**: Original microscope tiles before stitching, organized by:
+  - Fiber type: folders starting with `r02` (type 1), `r03` (type 2), `r04` (type 3), `r05` (type 4).
+  - Concentration: folders ending with `c02-c04` (concentration 1) and `c05-c07` (concentration 2).
+- **No Annotations**: Intentionally unlabeled to highlight the unsupervised challenge.
+
+Data can be accessed via the original shared link or added to the repository (if size permits).
+
+### Sample Processing Pipeline
+
+| Original (Grayscale) | Binary Mask | Clean Mask | Skeleton |
+|----------------------|-------------|------------|----------|
+| ![Original](images/original_gray.png) | ![Binary](images/mask_binary.png) | ![Clean](images/clean_mask.png) | ![Skeleton](images/skeleton.png) |
+
+| Skeleton Split (Junctions) | Instances (Color-coded) | Overlay on Original |
+|----------------------------|-------------------------|---------------------|
+| ![Split](images/skeleton_split.png) | ![Instances](images/instances_color.png) | ![Overlay](images/overlay.png) |
+
+## Approach
+
+A fully unsupervised classical pipeline was developed:
+
+1. **Preprocessing** — Grayscale normalization and adaptive thresholding (Otsu).
+2. **Binary Mask Cleaning** — Morphological operations to remove noise, fill gaps, and disconnect weakly touching regions.
+3. **Skeletonization** — Thinning to 1-pixel-wide centerlines using scikit-image's `skeletonize`.
+4. **Junction Detection & Splitting** — Identify branch points and split the skeleton graph into individual segments.
+5. **Instance Separation** — Connected component labeling on split skeletons, followed by refinement.
+6. **Measurements** — Compute length (along skeleton), average width, and statistics per fiber.
+
+No deep learning models are used — the solution is lightweight, deterministic, and highly effective for this domain.
+
+## Results
+
+The pipeline successfully segments and separates fibers across all images, enabling quantitative analysis.
+
+### Example Quantitative Results
+
+- **Sample Image 1**: 30 fibers detected  
+  - Lengths (pixels): Min = 14.1, Max = 657.7, Mean = 80.8, Std = 146.1  
+  - Clear clusters of short fragments and longer intact fibers.
+
+- **Sample Image 2**: 41 fibers detected  
+  - Lengths (pixels): Min = 19.5, Max = 1927.5, Mean = 113.1, Std = 291.8  
+  - Demonstrates extreme length variation.
+
+The included animation (`animation.gif`) visualizes the full step-by-step process on a real image, from raw input to color-coded instances and measurements.
+
+Results are exported as:
+- Color-labeled instance images
+- Overlay on originals
+- CSV files with per-fiber metrics (ID, length, width, etc.)
+
+This enables downstream statistical analysis (e.g., size distributions per fiber type/concentration).
