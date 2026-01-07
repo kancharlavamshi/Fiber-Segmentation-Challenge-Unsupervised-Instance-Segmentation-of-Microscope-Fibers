@@ -3,7 +3,6 @@
 <p align="center">
   <video width="800" controls>
     <source src="https://github.com/user-attachments/assets/9677c7ae-be25-40c4-baac-dad1ef73d70c" type="video/mp4">
-    Your browser does not support the video tag.
   </video>
 </p>
 
