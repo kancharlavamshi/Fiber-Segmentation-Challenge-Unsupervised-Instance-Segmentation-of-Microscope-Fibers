@@ -2,7 +2,7 @@
 
 <p align="center">
   <video width="800" controls>
-    <source src="https://github.com/user-attachments/assets/YOUR_ATTACHMENT_ID_HERE" type="video/mp4">
+    <source src="https://github.com/user-attachments/assets/9677c7ae-be25-40c4-baac-dad1ef73d70c" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </p>
@@ -12,6 +12,10 @@
 </p>
 
 ## Overview
+
+https://github.com/user-attachments/assets/9677c7ae-be25-40c4-baac-dad1ef73d70c
+
+
 
 This repository presents a challenging **unsupervised instance segmentation** task on grayscale microscope images of polyester and cotton fibers. The objective is to automatically detect, segment, and separate individual fibers—even when they heavily overlap or cross—then measure their lengths and widths to analyze size distribution, **all without any manual annotations**.
 
